@@ -1,0 +1,88 @@
+DATALOADER:
+  NUM_WORKERS: 4
+DATASET:
+  CONFIG_FILE: data/semantic-kitti.yaml
+  DATA_ROOT: data/SemanticKITTI/dataset/sequences
+  GRID_METERS:
+  - 0.2
+  - 0.2
+  - 0.2
+  LIMS:
+  - - 0
+    - 51.2
+  - - -25.6
+    - 25.6
+  - - -2
+    - 4.4
+  NCLASS: 20
+  SC_CLASS_FREQ:
+  - 7632350044
+  - 15783539
+  - 125136
+  - 118809
+  - 646799
+  - 821951
+  - 262978
+  - 283696
+  - 204750
+  - 61688703
+  - 4502961
+  - 44883650
+  - 2269923
+  - 56840218
+  - 15719652
+  - 158442623
+  - 2061623
+  - 36970522
+  - 1151988
+  - 334146
+  SIZES:
+  - 256
+  - 256
+  - 32
+  SS_CLASS_FREQ:
+  - 55437630
+  - 320797
+  - 541736
+  - 2578735
+  - 3274484
+  - 552662
+  - 184064
+  - 78858
+  - 240942562
+  - 17294618
+  - 170599734
+  - 6369672
+  - 230413074
+  - 101130274
+  - 476491114
+  - 9833174
+  - 129609852
+  - 4506626
+  - 1168181
+  TYPE: SemanticKITTI
+MODEL:
+  TYPE: DSC-AFC
+OPTIMIZER:
+  BASE_LR: 0.001
+  BETA1: 0.9
+  BETA2: 0.999
+  MOMENTUM: NA
+  TYPE: Adam
+  WEIGHT_DECAY: NA
+OUTPUT:
+  OUT_ROOT: ./outputs/
+SCHEDULER:
+  FREQUENCY: epoch
+  LR_POWER: 0.98
+  TYPE: power_iteration
+STATUS:
+  RESUME: false
+TRAIN:
+  BATCH_SIZE: 2
+  CHECKPOINT_PERIOD: 15
+  EPOCHS: 80
+  SUMMARY_PERIOD: 50
+VAL:
+  BATCH_SIZE: 2
+  SUMMARY_PERIOD: 20
