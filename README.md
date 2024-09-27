@@ -3,6 +3,8 @@
     <h2>Rethinking Efficient 3D Semantic Occupancy Prediction with Linear Complexity</h2> <br>
      <a href='https://jmwang0117.github.io/OccRWKV/'>Project_Page</a>
 </div>
+
+
 ## 📢 News
 
 - [2024/09]: OccRWKV's logs are available for download:
