@@ -3,13 +3,14 @@ import torch.nn as nn
 import torch
 import torch.nn.functional as F
 import torch_scatter
-
 import spconv.pytorch as spconv
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from utils.lovasz_losses import lovasz_softmax
+from networks.vrwkv import Block as RWKVBlock
+from utils.ssc_loss import sem_scal_loss
 
 class BasicBlock(spconv.SparseModule):
     def __init__(self, C_in, C_out, indice_key):
@@ -174,6 +175,11 @@ class SemanticBranch(nn.Module):
         self.proj3_block = SGFE(input_channels=128, output_channels=256,\
                                 reduce_channels=128, name="proj3")
 
+        # RWKV blocks
+        self.rwkv_block1 = RWKVBlock(n_embd=64, n_layer=18, layer_id=0)
+        self.rwkv_block2 = RWKVBlock(n_embd=128, n_layer=18, layer_id=0)
+        self.rwkv_block3 = RWKVBlock(n_embd=256,n_layer=18, layer_id=0)
+        
         self.phase = phase
         if phase == 'trainval':
             num_class = self.nbr_class  # SemanticKITTI: 19
@@ -215,39 +221,40 @@ class SemanticBranch(nn.Module):
             vw_features, coord.int(), np.array(self.sizes, np.int32)[::-1], batch_size
         )
         conv1_output = self.conv1_block(input_tensor)
-        proj1_vw, vw1_coord, pw1_coord = self.proj1_block(info, conv1_output.features, output_scale=2, input_coords=coord.int(),
-            input_coords_inv=full_coord)
+ 
+        proj1_vw, vw1_coord, pw1_coord = self.proj1_block(info, conv1_output.features, output_scale=2, input_coords=coord.int(), input_coords_inv=full_coord)
         proj1_bev = self.bev_projection(proj1_vw, vw1_coord, (np.array(self.sizes, np.int32) // 2)[::-1], batch_size)
-
-        conv2_input_tensor = spconv.SparseConvTensor(
-            proj1_vw, vw1_coord.int(), (np.array(self.sizes, np.int32) // 2)[::-1], batch_size
-        )
+        B, C, H, W = proj1_bev.shape
+        patch_resolution = (H, W)
+        proj1_bev_rwkv = self.rwkv_block1(proj1_bev.permute(0, 2, 3, 1).reshape(B, H * W, C), patch_resolution=patch_resolution).view(B, H, W, C).permute(0, 3, 1, 2)
+        
+        
+        conv2_input_tensor = spconv.SparseConvTensor(proj1_vw, vw1_coord.int(), (np.array(self.sizes, np.int32) // 2)[::-1], batch_size)
         conv2_output = self.conv2_block(conv2_input_tensor)
-        proj2_vw, vw2_coord, pw2_coord = self.proj2_block(info, conv2_output.features, output_scale=4, input_coords=vw1_coord.int(),
-            input_coords_inv=pw1_coord)
+        proj2_vw, vw2_coord, pw2_coord = self.proj2_block(info, conv2_output.features, output_scale=4, input_coords=vw1_coord.int(), input_coords_inv=pw1_coord)
         proj2_bev = self.bev_projection(proj2_vw, vw2_coord, (np.array(self.sizes, np.int32) // 4)[::-1], batch_size)
+        B, C, H, W = proj2_bev.shape
+        patch_resolution = (H, W)
+        proj2_bev_rwkv = self.rwkv_block2(proj2_bev.permute(0, 2, 3, 1).reshape(B, H * W, C), patch_resolution=patch_resolution).view(B, H, W, C).permute(0, 3, 1, 2)
 
-        conv3_input_tensor = spconv.SparseConvTensor(
-            proj2_vw, vw2_coord.int(), (np.array(self.sizes, np.int32) // 4)[::-1], batch_size
-        )
+        conv3_input_tensor = spconv.SparseConvTensor(proj2_vw, vw2_coord.int(), (np.array(self.sizes, np.int32) // 4)[::-1], batch_size)
         conv3_output = self.conv3_block(conv3_input_tensor)
-        proj3_vw, vw3_coord, _ = self.proj3_block(info, conv3_output.features, output_scale=8, input_coords=vw2_coord.int(),
-            input_coords_inv=pw2_coord)
+        proj3_vw, vw3_coord, _ = self.proj3_block(info, conv3_output.features, output_scale=8, input_coords=vw2_coord.int(), input_coords_inv=pw2_coord)
         proj3_bev = self.bev_projection(proj3_vw, vw3_coord, (np.array(self.sizes, np.int32) // 8)[::-1], batch_size)
+        B, C, H, W = proj3_bev.shape
+        patch_resolution = (H, W)
+        proj3_bev_rwkv = self.rwkv_block3(proj3_bev.permute(0, 2, 3, 1).reshape(B, H * W, C), patch_resolution=patch_resolution).view(B, H, W, C).permute(0, 3, 1, 2)
 
 
         if self.phase == 'trainval':
-            index_02 = torch.cat([info[2]['bxyz_indx'][:, 0].unsqueeze(-1),
-                               torch.flip(info[2]['bxyz_indx'], dims=[1])[:, :3]], dim=1)
-            index_04 = torch.cat([info[4]['bxyz_indx'][:, 0].unsqueeze(-1),
-                               torch.flip(info[4]['bxyz_indx'], dims=[1])[:, :3]], dim=1)
-            index_08 = torch.cat([info[8]['bxyz_indx'][:, 0].unsqueeze(-1),
-                               torch.flip(info[8]['bxyz_indx'], dims=[1])[:, :3]], dim=1)
+            index_02 = torch.cat([info[2]['bxyz_indx'][:, 0].unsqueeze(-1), torch.flip(info[2]['bxyz_indx'], dims=[1])[:, :3]], dim=1)
+            index_04 = torch.cat([info[4]['bxyz_indx'][:, 0].unsqueeze(-1), torch.flip(info[4]['bxyz_indx'], dims=[1])[:, :3]], dim=1)
+            index_08 = torch.cat([info[8]['bxyz_indx'][:, 0].unsqueeze(-1), torch.flip(info[8]['bxyz_indx'], dims=[1])[:, :3]], dim=1)
             vw_label_02 = voxel_sem_target(index_02.int(), pw_label.int())[0]
             vw_label_04 = voxel_sem_target(index_04.int(), pw_label.int())[0]
             vw_label_08 = voxel_sem_target(index_08.int(), pw_label.int())[0]
             return dict(
-                mss_bev_dense = [proj1_bev, proj2_bev, proj3_bev],
+                mss_bev_dense = [proj1_bev_rwkv, proj2_bev_rwkv, proj3_bev_rwkv],
                 mss_logits_list = [
                     [vw_label_02.clone(), self.out2(proj1_vw)],
                     [vw_label_04.clone(), self.out4(proj2_vw)],
@@ -255,7 +262,7 @@ class SemanticBranch(nn.Module):
             )
 
         return dict(
-            mss_bev_dense = [proj1_bev, proj2_bev, proj3_bev]
+            mss_bev_dense = [proj1_bev_rwkv, proj2_bev_rwkv, proj3_bev_rwkv]
         )
 
     def forward(self, data_dict, example):
@@ -284,6 +291,49 @@ class SemanticBranch(nn.Module):
             out_dict = self.forward_once(data_dict['vw_features'],
                 data_dict['coord_ind'], data_dict['full_coord'], None, data_dict['info'])
             return out_dict
+    
+    
+    
+    # def forward(self, data_dict, example):
+    #     if self.phase == 'trainval':
+    #         out_dict = self.forward_once(data_dict['vw_features'], 
+    #                                     data_dict['coord_ind'], data_dict['full_coord'], 
+    #                                     example['points_label'], data_dict['info'])
+    #         all_teach_pair = out_dict['mss_logits_list']
+
+    #         # Define weights for each scale. Adjust these as needed.
+    #         # For example, giving the first scale (0 index) a larger weight.
+    #         scale_weights = [3.0, 1.0, 1.0]  
+    #         loss_dict = {}
+    #         for i, teach_pair in enumerate(all_teach_pair):
+    #             voxel_labels_copy = teach_pair[0].long().clone()
+    #             voxel_labels_copy[voxel_labels_copy == 0] = 256
+    #             voxel_labels_copy = voxel_labels_copy - 1
+
+    #             #res04_loss = lovasz_softmax(F.softmax(teach_pair[1], dim=1), voxel_labels_copy, ignore=255)
+    #             sem_scal_loss_val = sem_scal_loss(teach_pair[1], voxel_labels_copy)  # Calculate semantic scale loss
+
+    #             # Apply the weight to the scale-specific losses
+    #             #weighted_res04_loss = res04_loss * scale_weights[i]
+    #             weighted_sem_scal_loss_val = sem_scal_loss_val * scale_weights[i]
+
+    #             # Update the loss dictionary with weighted losses
+    #             #loss_dict["vw_" + str(i) + "_lovasz_loss"] = weighted_res04_loss
+    #             loss_dict["vw_" + str(i) + "_sem_scal_loss"] = weighted_sem_scal_loss_val
+
+    #         # Sum up all computed losses to form the total loss
+    #         total_loss = sum(loss_dict.values())
+    #         loss_dict["total_loss"] = total_loss
+
+    #         return dict(
+    #             mss_bev_dense=out_dict['mss_bev_dense'],
+    #             loss=loss_dict
+    #         )
+    #     else:
+    #         out_dict = self.forward_once(data_dict['vw_features'],
+    #                                     data_dict['coord_ind'], data_dict['full_coord'], 
+    #                                     None, data_dict['info'])
+    #         return out_dict
 
     def get_class_weights(self):
         '''

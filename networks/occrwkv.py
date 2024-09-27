@@ -7,12 +7,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .preprocess import PcPreprocessor
-from .bev_net import BEVUNet, BEVUNetv1
+from .bev_net import BEVUNetv1
 from .completion import CompletionBranch
 from .semantic_segmentation import SemanticBranch
 from utils.lovasz_losses import lovasz_softmax
 
-class DSC(nn.Module):
+
+class OccRWKV(nn.Module):
     def __init__(self, cfg, phase='trainval'):
         super().__init__()
         self.phase = phase
@@ -83,7 +84,6 @@ class DSC(nn.Module):
         :param: prediction: the predicted tensor, must be [BS, C, H, W, D]
         '''
         class_weights = self.get_class_weights().to(device=scores.device, dtype=scores.dtype)
-
         loss_1_1 = F.cross_entropy(scores, labels.long(), weight=class_weights, ignore_index=255)
         loss_1_1 += lovasz_softmax(torch.nn.functional.softmax(scores, dim=1), labels.long(), ignore=255)
         loss_1_1 *= 3

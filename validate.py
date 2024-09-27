@@ -3,12 +3,12 @@ import argparse
 import torch
 import torch.nn as nn
 import sys
-
+from thop import profile
 # Append root directory to system path for imports
 repo_path, _ = os.path.split(os.path.realpath(__file__))
 repo_path, _ = os.path.split(repo_path)
 sys.path.append(repo_path)
-
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 from utils.seed import seed_all
 from utils.config import CFG
 from utils.dataset import get_dataset
@@ -44,6 +44,7 @@ def parse_args():
 
 
 def validate(model, dset, _cfg, logger, metrics):
+    
 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
     dtype = torch.float32  # Tensor type to be used
@@ -54,7 +55,8 @@ def validate(model, dset, _cfg, logger, metrics):
     logger.info('=> Passing the network on the validation set...')
     time_list = []
     model.eval()
-
+    flops_list = []
+    total_flops = 0
     with torch.no_grad():
         for t, (data, indices) in enumerate(tqdm(dset, ncols=100)):
 
@@ -62,6 +64,15 @@ def validate(model, dset, _cfg, logger, metrics):
             start_time = time.time()
             scores, loss = model(data)
             time_list.append(time.time() - start_time)
+            input_data = next(iter(data.values()))
+
+            # 计算FLOPs
+            flops, params = profile(model, inputs=(data,), verbose=False)
+            total_flops += flops
+            current_gflops = flops / 1e9
+            logger.info(f'Current batch GFLOPs: {current_gflops}')
+
+        
 
             # Updating batch losses to then get mean for epoch loss
             metrics.losses_track.update_validaiton_losses(loss)
@@ -93,6 +104,9 @@ def validate(model, dset, _cfg, logger, metrics):
             class_score = metrics.evaluator['1_1'].getIoU()[1][i]
             logger.info('    => IoU {}: {:.6f}'.format(class_name, class_score))
 
+        # 计算总FLOPs并转换为GFLOPs
+        total_gflops = (total_flops / len(dset.dataset)) / 1e9  # 转换为GFLOPs
+        logger.info(f'Average GFLOPs per input for validation set: {total_gflops}')
         return time_list
 
 

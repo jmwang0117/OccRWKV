@@ -3,67 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from dropblock import DropBlock2D
-
-
-class BEVFusion(nn.Module):
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, bev_features, sem_features, com_features):
-        return torch.cat([bev_features, sem_features, com_features], dim=1)
-
-    @staticmethod
-    def channel_reduction(x, out_channels):
-        """
-        Args:
-            x: (B, C1, H, W)
-            out_channels: C2
-
-        Returns:
-
-        """
-        B, in_channels, H, W = x.shape
-        assert (in_channels % out_channels == 0) and (in_channels >= out_channels)
-
-        x = x.view(B, out_channels, -1, H, W)
-        # x = torch.max(x, dim=2)[0]
-        x = x.sum(dim=2)
-        return x
-
-
-class BEVUNet(nn.Module):
-    def __init__(self, n_class, n_height, dilation, bilinear, group_conv, input_batch_norm, dropout, circular_padding, dropblock):
-        super().__init__()
-        self.inc = inconv(64, 64, dilation, input_batch_norm, circular_padding)
-        self.down1 = down(64, 128, dilation, group_conv, circular_padding)
-        self.down2 = down(256, 256, dilation, group_conv, circular_padding)
-        self.down3 = down(512, 512, dilation, group_conv, circular_padding)
-        self.down4 = down(1024, 512, dilation, group_conv, circular_padding)
-        self.up1 = up(1536, 512, circular_padding, bilinear = bilinear, group_conv = group_conv, use_dropblock=dropblock, drop_p=dropout)
-        self.up2 = up(1024, 256, circular_padding, bilinear = bilinear, group_conv = group_conv, use_dropblock=dropblock, drop_p=dropout)
-        self.up3 = up(512, 128, circular_padding, bilinear = bilinear, group_conv = group_conv, use_dropblock=dropblock, drop_p=dropout)
-        self.up4 = up(192, 128, circular_padding, bilinear = bilinear, group_conv = group_conv, use_dropblock=dropblock, drop_p=dropout)
-        self.dropout = nn.Dropout(p=0. if dropblock else dropout)
-        self.outc = outconv(128, n_class)
-
-        self.bev_fusions = nn.ModuleList([BEVFusion() for _ in range(3)])
-
-    def forward(self, x, sem_fea_list, com_fea_list):
-        x1 = self.inc(x)    # [B, 64, 256, 256]
-        x2 = self.down1(x1)    # [B, 128, 128, 128]
-        x2_f = self.bev_fusions[0](x2, sem_fea_list[0], com_fea_list[0]) # 128, 64, 64 -> 256
-        x3 = self.down2(x2_f)    # [B, 256, 64, 64]
-        x3_f = self.bev_fusions[1](x3, sem_fea_list[1], com_fea_list[1]) # 256, 128, 128 -> 512
-        x4 = self.down3(x3_f)    # [B, 512, 32, 32]
-        x4_f = self.bev_fusions[2](x4, sem_fea_list[2], com_fea_list[2]) # 512, 256, 256 -> 1024
-        x5 = self.down4(x4_f)    # [B, 512, 16, 16]
-        x = self.up1(x5, x4_f)
-        x = self.up2(x, x3_f)
-        x = self.up3(x, x2_f)
-        x = self.up4(x, x1)
-        x = self.outc(self.dropout(x))
-        return x
-
+from networks.vrwkv import Block as RWKVBlock
 
 class BEVFusionv1(nn.Module):
     def __init__(self, channel):
@@ -106,30 +46,62 @@ class BEVFusionv1(nn.Module):
 class BEVUNetv1(nn.Module):
     def __init__(self, n_class, n_height, dilation, bilinear, group_conv, input_batch_norm, dropout, circular_padding, dropblock):
         super().__init__()
+        # Encoder
         self.inc = inconv(64, 64, dilation, input_batch_norm, circular_padding)
         self.down1 = down(64, 128, dilation, group_conv, circular_padding)
         self.down2 = down(128, 256, dilation, group_conv, circular_padding)
         self.down3 = down(256, 512, dilation, group_conv, circular_padding)
         self.down4 = down(512, 512, dilation, group_conv, circular_padding)
-        self.up1 = up(1024, 512, circular_padding, bilinear = bilinear, group_conv = group_conv, use_dropblock=dropblock, drop_p=dropout)
-        self.up2 = up(768, 256, circular_padding, bilinear = bilinear, group_conv = group_conv, use_dropblock=dropblock, drop_p=dropout)
-        self.up3 = up(384, 128, circular_padding, bilinear = bilinear, group_conv = group_conv, use_dropblock=dropblock, drop_p=dropout)
-        self.up4 = up(192, 128, circular_padding, bilinear = bilinear, group_conv = group_conv, use_dropblock=dropblock, drop_p=dropout)
-        self.dropout = nn.Dropout(p=0. if dropblock else dropout)
-        self.outc = outconv(128, n_class)
+        
+        # RWKV blocks for the encoder
+      
+        self.rwkv_block1 = RWKVBlock(n_embd=128, n_layer=18, layer_id=0)
+        self.rwkv_block2 = RWKVBlock(n_embd=256, n_layer=18, layer_id=0)
+        self.rwkv_block3 = RWKVBlock(n_embd=512, n_layer=18, layer_id=0)
+        self.rwkv_block4 = RWKVBlock(n_embd=512, n_layer=18, layer_id=0)
+        self.rwkv_block_up1 = RWKVBlock(n_embd=512, n_layer=18, layer_id=0)
+        self.rwkv_block_up2 = RWKVBlock(n_embd=256, n_layer=18, layer_id=0)
+        self.rwkv_block_up3 = RWKVBlock(n_embd=128, n_layer=18, layer_id=0)
+        self.rwkv_block_up4 = RWKVBlock(n_embd=128, n_layer=18, layer_id=0)
 
+        # BEV fusion modules
         channels = [128, 256, 512]
         self.bev_fusions = nn.ModuleList([BEVFusionv1(channels[i]) for i in range(3)])
 
+        # Decoder
+        self.up1 = up(1024, 512, circular_padding, bilinear=bilinear, group_conv=group_conv, use_dropblock=dropblock, drop_p=dropout)
+        self.up2 = up(768, 256, circular_padding, bilinear=bilinear, group_conv=group_conv, use_dropblock=dropblock, drop_p=dropout)
+        self.up3 = up(384, 128, circular_padding, bilinear=bilinear, group_conv=group_conv, use_dropblock=dropblock, drop_p=dropout)
+        self.up4 = up(192, 128, circular_padding, bilinear=bilinear, group_conv=group_conv, use_dropblock=dropblock, drop_p=dropout)
+        self.outc = outconv(128, n_class)
+        
+        self.dropout = nn.Dropout(p=0. if dropblock else dropout)
+
     def forward(self, x, sem_fea_list, com_fea_list):
-        x1 = self.inc(x)    # [B, 64, 256, 256]
-        x2 = self.down1(x1)    # [B, 128, 128, 128]
-        x2_f = self.bev_fusions[0](x2, sem_fea_list[0], com_fea_list[0]) # 128, 64, 64 -> 128
-        x3 = self.down2(x2_f)    # [B, 256, 64, 64]
-        x3_f = self.bev_fusions[1](x3, sem_fea_list[1], com_fea_list[1]) # 256, 128, 128 -> 256
-        x4 = self.down3(x3_f)    # [B, 512, 32, 32]
-        x4_f = self.bev_fusions[2](x4, sem_fea_list[2], com_fea_list[2]) # 512, 256, 256 -> 512
-        x5 = self.down4(x4_f)    # [B, 512, 16, 16]
+        # Encoder with RWKV blocks
+        x1 = self.inc(x)
+       
+        x2 = self.down1(x1)
+        B, C, H, W = x2.shape
+        x2 = self.rwkv_block1(x2.permute(0, 2, 3, 1).reshape(B, H * W, C), patch_resolution=(H, W)).view(B, H, W, C).permute(0, 3, 1, 2)
+        x2_f = self.bev_fusions[0](x2, sem_fea_list[0], com_fea_list[0])
+
+        x3 = self.down2(x2_f)
+        B, C, H, W = x3.shape
+        x3 = self.rwkv_block2(x3.permute(0, 2, 3, 1).reshape(B, H * W, C), patch_resolution=(H, W)).view(B, H, W, C).permute(0, 3, 1, 2)
+        x3_f = self.bev_fusions[1](x3, sem_fea_list[1], com_fea_list[1])
+
+        x4 = self.down3(x3_f)
+        B, C, H, W = x4.shape
+        x4 = self.rwkv_block3(x4.permute(0, 2, 3, 1).reshape(B, H * W, C), patch_resolution=(H, W)).view(B, H, W, C).permute(0, 3, 1, 2)
+        x4_f = self.bev_fusions[2](x4, sem_fea_list[2], com_fea_list[2])
+        
+        x5 = self.down4(x4_f)
+        B, C, H, W = x5.shape
+        x5 = self.rwkv_block4(x5.permute(0, 2, 3, 1).reshape(B, H * W, C), patch_resolution=(H, W)).view(B, H, W, C).permute(0, 3, 1, 2)
+        
+       
+        # return x
         x = self.up1(x5, x4_f)  # 512, 512
         x = self.up2(x, x3_f)  # 512, 256
         x = self.up3(x, x2_f)  # 256, 128

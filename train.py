@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 import argparse
 import torch
 import torch.nn as nn
@@ -24,11 +24,11 @@ from utils.metrics import Metrics
 import utils.checkpoint as checkpoint
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='DSC training')
+    parser = argparse.ArgumentParser(description='OccRWKV training')
     parser.add_argument(
         '--cfg',
         dest='config_file',
-        default='cfgs/SSC-RS.yaml',
+        default='cfgs/OccRWKV.yaml',
         metavar='FILE',
         help='path to config file',
         type=str,
@@ -147,7 +147,6 @@ def train(model, optimizer, scheduler, dataset, _cfg, start_epoch, logger, tbwri
         for scale in metrics.evaluator.keys():
             tbwriter.add_scalar('train_performance/{}/mIoU'.format(scale), metrics.get_semantics_mIoU(scale).item(), epoch - 1)
             tbwriter.add_scalar('train_performance/{}/IoU'.format(scale), metrics.get_occupancy_IoU(scale).item(), epoch - 1)
-            tbwriter.add_scalar('train_performance/{}/Seg_mIoU'.format(scale), seg_miou, epoch - 1)
             tbwriter.add_scalar('train_performance/{}/Precision'.format(scale), metrics.get_occupancy_Precision(scale).item(), epoch-1)
             tbwriter.add_scalar('train_performance/{}/Recall'.format(scale), metrics.get_occupancy_Recall(scale).item(), epoch-1)
             tbwriter.add_scalar('train_performance/{}/F1'.format(scale), metrics.get_occupancy_F1(scale).item(), epoch-1)
@@ -256,10 +255,10 @@ def validate(model, dset, _cfg, epoch, logger, tbwriter, metrics):
 
         checkpoint_info = {}
 
-        if epoch_loss < _cfg._dict['OUTPUT']['BEST_LOSS']:
-            logger.info('=> Best loss on validation set encountered: ({} < {})'.format(epoch_loss, _cfg._dict['OUTPUT']['BEST_LOSS']))
-            _cfg._dict['OUTPUT']['BEST_LOSS'] = epoch_loss.item()
-            checkpoint_info['best-loss'] = 'BEST_LOSS'
+        # if epoch_loss < _cfg._dict['OUTPUT']['BEST_LOSS']:
+        #     logger.info('=> Best loss on validation set encountered: ({} < {})'.format(epoch_loss, _cfg._dict['OUTPUT']['BEST_LOSS']))
+        #     _cfg._dict['OUTPUT']['BEST_LOSS'] = epoch_loss.item()
+        #     checkpoint_info['best-loss'] = 'BEST_LOSS'
 
         mIoU_1_1 = metrics.get_semantics_mIoU('1_1')
         IoU_1_1 = metrics.get_occupancy_IoU('1_1')
@@ -276,9 +275,9 @@ def validate(model, dset, _cfg, epoch, logger, tbwriter, metrics):
 def main():
 
     # https://github.com/pytorch/pytorch/issues/27588
-    torch.backends.cudnn.enabled = False
+    torch.backends.cudnn.enabled = True
 
-    seed_all(10)
+    seed_all(42)
 
     args = parse_args()
 
@@ -304,9 +303,7 @@ def main():
 
     logger.info('=> Loading network architecture...')
     model = get_model(_cfg._dict, phase='trainval')
-    if torch.cuda.device_count() > 1:
-        model = nn.DataParallel(model)
-        model = model.module
+   
     logger.info(f'=> Model Parameters: {sum(p.numel() for p in model.parameters())/1000000.0} M')
 
     logger.info('=> Loading optimizer...')

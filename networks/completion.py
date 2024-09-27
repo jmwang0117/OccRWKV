@@ -1,9 +1,9 @@
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
-
+from networks.vrwkv import Block as RWKVBlock
 from utils.lovasz_losses import lovasz_softmax
-
+from utils.ssc_loss import geo_scal_loss
 
 class ResBlock(nn.Module):
     def __init__(self, in_dim, out_dim, kernel_size, padding, stride, dilation=1):
@@ -36,6 +36,11 @@ class CompletionBranch(nn.Module):
         self.block_1 = make_layers(16, 16, kernel_size=3, padding=1, stride=1, dilation=1, blocks=1) # 1/2, 16
         self.block_2 = make_layers(16, 32, kernel_size=3, padding=1, stride=1, dilation=1, downsample=True, blocks=1) # 1/4, 32
         self.block_3 = make_layers(32, 64, kernel_size=3, padding=2, stride=1, dilation=2, downsample=True, blocks=1)  # 1/8, 64
+        
+        # RWKV blocks
+        self.rwkv_block1 = RWKVBlock(n_embd=64, n_layer=18, layer_id=0)
+        self.rwkv_block2 = RWKVBlock(n_embd=128, n_layer=18, layer_id=0)
+        self.rwkv_block3 = RWKVBlock(n_embd=256,n_layer=18, layer_id=0)
 
         self.reduction_1 = nn.Sequential(
             nn.Conv2d(256, 128, kernel_size=1),
@@ -72,7 +77,19 @@ class CompletionBranch(nn.Module):
         bev_1 = self.reduction_1(res1.flatten(1, 2)) # B, 64, 128, 128
         bev_2 = self.reduction_2(res2.flatten(1, 2)) # B, 128, 64, 64
         bev_3 = res3.flatten(1, 2) # B, 256, 32, 32
-
+  
+        B, C, H, W = bev_1.shape
+        patch_resolution = (H, W)
+        bev_1 = self.rwkv_block1(bev_1.permute(0, 2, 3, 1).reshape(B, H * W, C), patch_resolution=patch_resolution).view(B, H, W, C).permute(0, 3, 1, 2)
+        
+        B, C, H, W = bev_2.shape
+        patch_resolution = (H, W)
+        bev_2 = self.rwkv_block2(bev_2.permute(0, 2, 3, 1).reshape(B, H * W, C), patch_resolution=patch_resolution).view(B, H, W, C).permute(0, 3, 1, 2)
+        
+        B, C, H, W = bev_3.shape
+        patch_resolution = (H, W)
+        bev_3 = self.rwkv_block3(bev_3.permute(0, 2, 3, 1).reshape(B, H * W, C), patch_resolution=patch_resolution).view(B, H, W, C).permute(0, 3, 1, 2)
+        
         if self.phase == 'trainval':
             logits_2 = self.out2(res1)
             logits_4 = self.out4(res2)
@@ -123,4 +140,4 @@ class CompletionBranch(nn.Module):
         else:
             out_dict = self.forward_once(data_dict['vw_dense'])
             return out_dict
-
+        
