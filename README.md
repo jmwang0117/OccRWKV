@@ -77,7 +77,7 @@ We provide training routine examples in the `cfgs` folder. Make sure to change t
 * `config_dict['DATASET']['DATA_ROOT']` should be changed to the root directory of the SemanticKITTI dataset (`/.../SemanticKITTI/dataset/sequences`)
 * `config_dict['OUTPUT']['OUT_ROOT'] ` should be changed to desired output folder.
 
-### Train SSC-RS Net
+### Train OccRWKV Net
 
 ```
 $ cd <root dir of this repo>
@@ -107,9 +107,10 @@ $ bash scripts/run_test.sh
 
 ## 🏆 Acknowledgement
 Many thanks to these excellent open source projects:
-- [AGRNav](https://github.com/jmwang0117/AGRNav)
-- [Prometheus](https://github.com/amov-lab/Prometheus)
+- [RWKV](https://github.com/BlinkDL/RWKV-LM)
+- [Vision-RWKV](https://github.com/OpenGVLab/Vision-RWKV)
 - [SSC-RS](https://github.com/Jieqianyu/SSC-RS)
+- [AGRNav](https://github.com/jmwang0117/AGRNav)
 - [semantic-kitti-api](https://github.com/PRBonn/semantic-kitti-api)
-- [Terrestrial-Aerial-Navigation](https://github.com/ZJU-FAST-Lab/Terrestrial-Aerial-Navigation)
-- [EGO-Planner](https://github.com/ZJU-FAST-Lab/ego-planner-swarm)
+
+
