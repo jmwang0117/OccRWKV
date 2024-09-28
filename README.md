@@ -23,7 +23,7 @@
 </br>
 
 ```
-@article{wang2024omega,
+@article{wang2024occrwkv,
 title={OccRWKV: Rethinking Efficient 3D Semantic Occupancy Prediction with Linear Complexity},
 author={Wang, Junming and Yin, Wei and Long, Xiaoxiao and Zhang, Xinyu and Xing, Zebing and Guo, Xiaoyang and Qian, Zhang},
 year={2024}
