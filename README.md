@@ -1,7 +1,7 @@
 <div align="center">
     <h1>🤖 OccRWKV</h1>
     <h2>Rethinking Efficient 3D Semantic Occupancy Prediction with Linear Complexity</h2> <br>
-     We will open source the complete code after the paper is accepted ！<br>
+     We will open source the complete code after the paper is accepted ！<br><br>
      <a href='#'><img src='https://img.shields.io/badge/arXiv-2309.13882-red' alt='arxiv'></a>
      <a href='https://jmwang0117.github.io/OccRWKV/'><img src='https://img.shields.io/badge/Project_Page-FC_Planner-green' alt='Project Page'></a>
 </div>
@@ -9,7 +9,7 @@
 
 ## 📢 News
 
-- [2024/09]: OccRWKV's logs are available for download:
+- [2024/09.28]: OccRWKV's logs are available for download:
 <div align="center">
 
 | OccRWKV Results | Experiment Log |
@@ -19,8 +19,8 @@
 
 </div>
 
-- [2024/08]: The pre-trained model can be downloaded at  [OneDrive](https://connecthkuhk-my.sharepoint.com/:u:/g/personal/u3009632_connect_hku_hk/ETCUIJ7rPnFJniQYMsDsPyIBHkzirRP4c3n-eU9fcBZTaA?e=P8AkQ2).
-- [2024/07]: 🔥 We released the code of OccRWKV. *The First Receptance Weighted Key Value (RWKV)-based 3D Semantic Occupancy Network*
+- [2024/09.15]: The pre-trained model can be downloaded at  [OneDrive](https://connecthkuhk-my.sharepoint.com/:u:/g/personal/u3009632_connect_hku_hk/ETCUIJ7rPnFJniQYMsDsPyIBHkzirRP4c3n-eU9fcBZTaA?e=P8AkQ2).
+- [2024/09.01]: 🔥 We released the code of OccRWKV. *The First Receptance Weighted Key Value (RWKV)-based 3D Semantic Occupancy Network*
 
 </br>
 
