@@ -75,9 +75,6 @@ Clone the repository:
 https://github.com/jmwang0117/OccRWKV.git
 ```
 
-We provide training routine examples in the `cfgs` folder. Make sure to change the dataset path to your extracted dataset location in such files if you want to use them for training. Additionally, you can change the folder where the performance and states will be stored.
-* `config_dict['DATASET']['DATA_ROOT']` should be changed to the root directory of the SemanticKITTI dataset (`/.../SemanticKITTI/dataset/sequences`)
-* `config_dict['OUTPUT']['OUT_ROOT'] ` should be changed to desired output folder.
 
 ### Train OccRWKV Net
 
@@ -87,7 +84,6 @@ $ bash scripts/run_train.sh
 ```
 ### Validation
 
-Validation passes are done during training routine. Additional pass in the validation set with saved model can be done by using the `validate.py` file. You need to provide the path to the saved model and the dataset root directory.
 
 ```
 $ cd <root dir of this repo>
@@ -95,11 +91,7 @@ $ bash scripts/run_val.sh
 ```
 ### Test
 
-Since SemantiKITTI contains a hidden test set, we provide test routine to save predicted output in same format of SemantiKITTI, which can be compressed and uploaded to the [SemanticKITTI Semantic Scene Completion Benchmark](http://www.semantic-kitti.org/tasks.html#ssc).
-
-We recommend to pass compressed data through official checking script provided in the [SemanticKITTI Development Kit](http://www.semantic-kitti.org/resources.html#devkit) to avoid any issue.
-
-You can provide which checkpoints you want to use for testing. We used the ones that performed best on the validation set during training. For testing, you can use the following command.
+Since SemantiKITTI contains a hidden test set, we provide test routine to save predicted output in same format of SemantiKITTI, which can be compressed and uploaded to the [SemanticKITTI Semantic Scene Completion Benchmark](http://www.semantic-kitti.org/tasks.html#ssc). You can provide which checkpoints you want to use for testing. We used the ones that performed best on the validation set during training. For testing, you can use the following command.
 
 ```
 $ cd <root dir of this repo>
@@ -113,6 +105,7 @@ Many thanks to these excellent open source projects:
 - [Vision-RWKV](https://github.com/OpenGVLab/Vision-RWKV)
 - [SSC-RS](https://github.com/Jieqianyu/SSC-RS)
 - [AGRNav](https://github.com/jmwang0117/AGRNav)
+- [HE-Nav](https://github.com/jmwang0117/HE-Nav)
 - [semantic-kitti-api](https://github.com/PRBonn/semantic-kitti-api)
 
 
