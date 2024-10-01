@@ -26,7 +26,7 @@
 
 ## 📜 Introduction
 
-**OccRWKV** introduces an efficient semantic occupancy prediction network that smartly decouples semantics and geometry with specialized RWKV blocks, achieving superior accuracy and real-time performance for 3D semantic scene understanding. Its use of BEV space and sparse feature projection significantly reduces computational demands, making it highly suitable for enhancing real-time autonomous navigation in robotic systems.
+**OccRWKV** introduces an efficient semantic occupancy prediction network that smartly decouples semantics and occupancy with specialized RWKV blocks, achieving superior accuracy and real-time performance for 3D semantic scene understanding. Its use of BEV space and sparse feature projection significantly reduces computational demands, making it highly suitable for enhancing real-time autonomous navigation in robotic systems.
 
 
 
