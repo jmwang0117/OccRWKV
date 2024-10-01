@@ -1,29 +1,29 @@
-// {
-//     "version": "0.2.0",
-//     "configurations": [
-//         {
-//             "name": "Python: Train with Args",
-//             "type": "python",
-//             "request": "launch",
-//             "program": "/home/jmwang/OccRWKV/train.py", // Use the absolute path directly
-//             "console": "integratedTerminal",
-//             "args": [
-//                 "--cfg", "/home/jmwang/OccRWKV/cfgs/2024.6.11.yaml",
-//                 "--dset_root", "/home/jmwang/datasets/semantic_kitti/dataset/sequences"
-//             ],
-//             "justMyCode": true
-//         },
-//         {
-//             "name": "Python: Validate with Args",
-//             "type": "python",
-//             "request": "launch",
-//             "program": "/home/jmwang/OccRWKV/validate.py", // Use the absolute path directly
-//             "console": "integratedTerminal",
-//             "args": [
-//                 "--weights", "/root/Occ-Mamba/outputs/DSC-AFC_SemanticKITTI_0527_121913/chkpt/best-metric/weights_epoch_104.pth",
-//                 "--dset_root", "/root/datasets/semantic_kitti/dataset/sequences"
-//             ],
-//             "justMyCode": true
-//         }
-//     ]
-// }
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Train with Args",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/jmwang/OccRWKV/train.py", // Use the absolute path directly
+            "console": "integratedTerminal",
+            "args": [
+                "--cfg", "/home/jmwang/OccRWKV/cfgs/2024.6.11.yaml",
+                "--dset_root", "/home/jmwang/datasets/semantic_kitti/dataset/sequences"
+            ],
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Validate with Args",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/jmwang/OccRWKV/validate.py", // Use the absolute path directly
+            "console": "integratedTerminal",
+            "args": [
+                "--weights", "/root/Occ-Mamba/outputs/DSC-AFC_SemanticKITTI_0527_121913/chkpt/best-metric/weights_epoch_60.pth",
+                "--dset_root", "/root/datasets/semantic_kitti/dataset/sequences"
+            ],
+            "justMyCode": true
+        }
+    ]
+}
