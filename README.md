@@ -2,7 +2,7 @@
     <h1>🤖 OccRWKV</h1>
     <h2>Rethinking Efficient 3D Semantic Occupancy Prediction with Linear Complexity</h2> <br>
      We will open source the complete code after the paper is accepted ！<br><br>
-     <a href='#'><img src='https://img.shields.io/badge/arXiv-OccRWKV-green' alt='arxiv'></a>
+     <a href='https://arxiv.org/abs/2409.19987'><img src='https://img.shields.io/badge/arXiv-OccRWKV-green' alt='arxiv'></a>
      <a href='https://jmwang0117.github.io/OccRWKV/'><img src='https://img.shields.io/badge/Project_Page-OccRWKV-green' alt='Project Page'></a>
 </div>
 
