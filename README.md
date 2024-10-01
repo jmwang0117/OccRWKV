@@ -24,6 +24,19 @@
 
 </br>
 
+## 📜 Introduction
+
+**OccRWKV** introduces an efficient semantic occupancy prediction network that smartly decouples semantics and geometry with specialized RWKV blocks, achieving superior accuracy and real-time performance for 3D semantic scene understanding. Its use of BEV space and sparse feature projection significantly reduces computational demands, making it highly suitable for enhancing real-time autonomous navigation in robotic systems.
+
+
+
+<p align="center">
+  <img src="misc/overview.png" width = 60% height = 60%/>
+</p>
+
+<br>
+
+
 ```
 @article{wang2024occrwkv,
 title={OccRWKV: Rethinking Efficient 3D Semantic Occupancy Prediction with Linear Complexity},
@@ -104,8 +117,9 @@ Many thanks to these excellent open source projects:
 - [RWKV](https://github.com/BlinkDL/RWKV-LM)
 - [Vision-RWKV](https://github.com/OpenGVLab/Vision-RWKV)
 - [SSC-RS](https://github.com/Jieqianyu/SSC-RS)
+- [Co-Occ](https://github.com/Rorisis/Co-Occ)
 - [AGRNav](https://github.com/jmwang0117/AGRNav)
 - [HE-Nav](https://github.com/jmwang0117/HE-Nav)
-- [semantic-kitti-api](https://github.com/PRBonn/semantic-kitti-api)
+
 
 
