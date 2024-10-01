@@ -31,7 +31,7 @@
 
 
 <p align="center">
-  <img src="misc/overview.png" width = 60% height = 60%/>
+  <img src="misc/overview.png" width = 80% height = 80%/>
 </p>
 
 <br>
