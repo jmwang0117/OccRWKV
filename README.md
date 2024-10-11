@@ -37,12 +37,15 @@
 <br>
 
 
+## 🚀 Citing
+
 ```
 @article{wang2024occrwkv,
-title={OccRWKV: Rethinking Efficient 3D Semantic Occupancy Prediction with Linear Complexity},
-author={Wang, Junming and Yin, Wei and Long, Xiaoxiao and Zhang, Xinyu and Xing, Zebing and Guo, Xiaoyang and Qian, Zhang},
-year={2024}
-      } 
+  title={OccRWKV: Rethinking Efficient 3D Semantic Occupancy Prediction with Linear Complexity},
+  author={Wang, Junming and Yin, Wei and Long, Xiaoxiao and Zhang, Xingyu and Xing, Zebin and Guo, Xiaoyang and Zhang, Qian},
+  journal={arXiv preprint arXiv:2409.19987},
+  year={2024}
+}
 ```
 
 Please kindly star ⭐️ this project if it helps you. We take great efforts to develop and maintain it 😁.
