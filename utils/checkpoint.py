@@ -82,7 +82,7 @@ def save(path, model, optimizer, scheduler, epoch, config):
   '''
 
   # Remove recursively if epoch_last folder exists and create new one
-  # _remove_recursively(path)
+  #_remove_recursively(path)
   _create_directory(path)
 
   weights_fpath = os.path.join(path, 'weights_epoch_{}.pth'.format(str(epoch).zfill(3)))

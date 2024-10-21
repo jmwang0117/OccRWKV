@@ -1,5 +1,5 @@
-from networks.dsc import DSC
+from networks.occrwkv import OccRWKV
 
 
 def get_model(_cfg, phase='train'):
-    return DSC(_cfg, phase=phase)
+    return OccRWKV(_cfg, phase=phase)
