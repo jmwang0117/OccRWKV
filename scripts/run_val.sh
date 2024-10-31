@@ -1,0 +1,1 @@
+python /home/jmwang/OccRWKV/validate.py --weights /home/jmwang/OccRWKV/outputs/OccRWKV_SemanticKITTI_0828_074122/chkpt/best-metric/weights_epoch_060.pth --dset_root /home/jmwang/datasets/semantic_kitti/dataset/sequences 

@@ -1,0 +1,1 @@
+python /home/jmwang/semantic-kitti-api/validate_submission.py --task completion /home/jmwang/OccRWKV/predictions/submission.zip /home/jmwang/datasets/semantic_kitti/dataset                                                             
