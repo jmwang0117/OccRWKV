@@ -5,6 +5,11 @@
      <a href='https://jmwang0117.github.io/OccRWKV/'><img src='https://img.shields.io/badge/Project_Page-OccRWKV-green' alt='Project Page'></a>
 </div>
 
+## 🎉 Chinese Media Reports
+* [RWKV Official Website](https://rwkv.cn/) -- 2024.10
+* [Autonomous Driving Daily](https://mp.weixin.qq.com/s/s8Ujgfsd5iLDE8VT-vQ43A) -- 2024.10
+* [ADFeed](https://mp.weixin.qq.com/s/ImSyMZUIF67Uq706CY9f_w) -- 2024.10
+* [Intelligent Driving Lab](https://mp.weixin.qq.com/s/sGiV_PKB_nZWXRApce7IsA) -- 2024.10
 
 ## 📢 News
 
