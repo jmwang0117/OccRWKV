@@ -6,10 +6,10 @@
 </div>
 
 ## 🎉 Chinese Media Reports/Interpretations
-* [RWKV Official Website](https://rwkv.cn/) -- 2024.10
-* [Autonomous Driving Daily](https://mp.weixin.qq.com/s/s8Ujgfsd5iLDE8VT-vQ43A) -- 2024.10
-* [ADFeed](https://mp.weixin.qq.com/s/ImSyMZUIF67Uq706CY9f_w) -- 2024.10
-* [Intelligent Driving Lab](https://mp.weixin.qq.com/s/sGiV_PKB_nZWXRApce7IsA) -- 2024.10
+* [2024.10] - [RWKV Official Website](https://rwkv.cn/)
+* [2024.10] - [Autonomous Driving Daily](https://mp.weixin.qq.com/s/s8Ujgfsd5iLDE8VT-vQ43A)
+* [2024.10] - [ADFeed](https://mp.weixin.qq.com/s/ImSyMZUIF67Uq706CY9f_w)
+* [2024.10] - [Intelligent Driving Lab](https://mp.weixin.qq.com/s/sGiV_PKB_nZWXRApce7IsA)
 
 ## 📢 News
 
